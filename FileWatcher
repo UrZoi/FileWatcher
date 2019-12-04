@@ -1,0 +1,34 @@
+
+param (
+    [Parameter(Mandatory=$false)][string]$folder ="C:\scripts\filechange\Nueva",
+    [Parameter(Mandatory=$false)][string]$server = "\\$IP-Adress\srv\nfs\file\")
+
+
+
+$logsdir = "c:\scripts\filechange\outlog.txt" 
+$count = (dir $folder | measure).Count;
+#Write-Host $count
+dir "$folder\*" | Unblock-File
+
+if($count -eq 1 -Or $count -gt 1 ) {
+  $lista = Get-ChildItem -Path $folder -Name
+  Foreach($i in $lista){
+    
+    Copy-Item "$folder\$i" -Destination "$server"
+    if($?){
+        #Write-Host "Copy successfully"
+        Out-File -FilePath $logsdir -Append -InputObject "File Copied was $i" 
+        Remove-Item –path "$folder\$i"
+        Out-File -FilePath $logsdir -Append -InputObject "File is removed now" 
+    }else{
+
+        #Write-Host "Copy failed"
+        Out-File -FilePath $logsdir -Append -InputObject "File Copied was $i and its failed so we will not remove it" 
+}
+}
+
+}else {
+	Out-File -FilePath $logsdir -Append -InputObject "Dont Have more than a file" 
+}
+exit
+
